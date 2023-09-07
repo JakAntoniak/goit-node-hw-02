@@ -1,13 +1,13 @@
 // const fs = require("fs");
 // const path = require("path");
 // const { v4: uuidv4 } = require("uuid");
-import { User } from "../schema/schema.js";
+import { Contact } from "../schema/schema.js";
 
 // const contactsPath = path.join(__dirname, "contacts.json");
 
 export const listContacts = async () => {
   try {
-    return User.find();
+    return await Contact.find();
     // JSON.parse(fs.readFileSync(contactsPath));
   } catch (err) {
     console.log(err.message);
@@ -24,21 +24,21 @@ export const listContacts = async () => {
 //   }
 // };
 
-// export const removeContact = async (contactId) => {
-//   try {
-//     const contacts = JSON.parse(fs.readFileSync(contactsPath));
-//     const indexToRemove = contacts.findIndex((el) => el.id === contactId);
-//     console.log(indexToRemove);
-//     if (indexToRemove === -1) {
-//       return;
-//     }
-//     contacts.splice(indexToRemove, 1);
-//     fs.writeFileSync(contactsPath, JSON.stringify(contacts));
-//     return contacts;
-//   } catch (err) {
-//     console.log(err);
-//   }
-// };
+export const removeContact = async (contactId) => {
+  try {
+    // const contacts = JSON.parse(fs.readFileSync(contactsPath));
+    return await Contact.findByIdAndRemove({ _id: contactId });
+
+    // if (indexToRemove === -1) {
+    //   return;
+    // }
+    // contacts.splice(indexToRemove, 1);
+    // fs.writeFileSync(contactsPath, JSON.stringify(contacts));
+    // return contacts;
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 export const addContact = async (body) => {
   try {
@@ -49,7 +49,7 @@ export const addContact = async (body) => {
       email,
       phone,
     };
-    return User.create(newContact);
+    return Contact.create(newContact);
   } catch (err) {
     console.log(err);
   }
