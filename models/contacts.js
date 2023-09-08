@@ -8,7 +8,6 @@ import { Contact } from "../schema/schema.js";
 export const listContacts = async () => {
   try {
     return await Contact.find();
-    // JSON.parse(fs.readFileSync(contactsPath));
   } catch (err) {
     console.log(err.message);
   }
