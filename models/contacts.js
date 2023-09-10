@@ -1,82 +1,61 @@
-const fs = require("fs");
-const path = require("path");
-const { v4: uuidv4 } = require("uuid");
+import { Contact } from "../schema/schema.js";
 
-const contactsPath = path.join(__dirname, "contacts.json");
-
-const listContacts = async () => {
+export const listContacts = async () => {
   try {
-    return JSON.parse(fs.readFileSync(contactsPath));
-  } catch (err) {
-    console.log(err.message);
-  }
-};
-
-const getContactById = async (contactId) => {
-  try {
-    const contacts = JSON.parse(fs.readFileSync(contactsPath));
-    const selectedId = contacts.find((el) => el.id === contactId);
-    return selectedId;
+    return await Contact.find();
   } catch (err) {
     console.log(err);
+    throw err;
   }
 };
 
-const removeContact = async (contactId) => {
+export const getContactById = async (contactId) => {
   try {
-    const contacts = JSON.parse(fs.readFileSync(contactsPath));
-    const indexToRemove = contacts.findIndex((el) => el.id === contactId);
-    console.log(indexToRemove);
-    if (indexToRemove === -1) {
-      return;
-    }
-    contacts.splice(indexToRemove, 1);
-    fs.writeFileSync(contactsPath, JSON.stringify(contacts));
-    return contacts;
+    return await Contact.findById({ _id: contactId });
   } catch (err) {
     console.log(err);
+    throw err;
   }
 };
 
-const addContact = async (body) => {
+export const removeContact = async (contactId) => {
   try {
-    const contacts = JSON.parse(fs.readFileSync(contactsPath));
+    return await Contact.findByIdAndRemove({ _id: contactId });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+export const addContact = async (body) => {
+  try {
     const { name, email, phone } = body;
     const newContact = {
-      id: uuidv4(),
       name,
       email,
       phone,
     };
-
-    contacts.push(newContact);
-    fs.writeFileSync(contactsPath, JSON.stringify(contacts));
-    return newContact;
+    return Contact.create(newContact);
   } catch (err) {
     console.log(err);
+    throw err;
   }
 };
 
-const updateContact = async (contactId, body) => {
+export const updateContact = async (contactId, body) => {
   try {
-    const contacts = JSON.parse(fs.readFileSync(contactsPath));
-    const contactToUpdate = contacts.find((el) => el.id === contactId);
-    const { name, email, phone } = body;
-    contactToUpdate.name = name || contactToUpdate.name;
-    contactToUpdate.email = email || contactToUpdate.email;
-    contactToUpdate.phone = phone || contactToUpdate.phone;
-
-    fs.writeFileSync(contactsPath, JSON.stringify(contacts));
-    return contacts;
+    return await Contact.findByIdAndUpdate(contactId, body);
   } catch (err) {
     console.log(err);
+    throw err;
   }
 };
 
-module.exports = {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContact,
+export const updateStatusContact = async (contactId, body) => {
+  try {
+    return Contact.findByIdAndUpdate(contactId, body);
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
 };

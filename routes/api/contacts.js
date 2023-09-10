@@ -1,14 +1,15 @@
-const express = require("express");
-const Joi = require("joi");
-const {
+import express from "express";
+import {
   listContacts,
-  getContactById,
   addContact,
   removeContact,
+  getContactById,
   updateContact,
-} = require("../../models/contacts");
+  updateStatusContact,
+} from "../../models/contacts.js";
+import Joi from "joi";
 
-const router = express.Router();
+export const router = express.Router();
 
 const schema = Joi.object({
   name: Joi.string().required(),
@@ -23,12 +24,8 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:contactId", async (req, res, next) => {
   const { contactId } = req.params;
-  const id = await getContactById(contactId);
-
-  if (id) {
-    return res.status(200).json(await id);
-  }
-  return res.status(404).json({ message: "Not found" });
+  const id = getContactById(contactId);
+  res.status(200).json(await id);
 });
 
 router.post("/", async (req, res, next) => {
@@ -50,19 +47,21 @@ router.post("/", async (req, res, next) => {
 
 router.delete("/:contactId", async (req, res, next) => {
   const { contactId } = req.params;
-  const idToRemove = await removeContact(contactId);
-  console.log(idToRemove);
 
-  if (idToRemove) {
-    return res.status(200).json({ message: "contact deleted" });
+  try {
+    await removeContact(contactId);
+    return res
+      .status(200)
+      .json({ message: `Contact with ID: ${contactId} has been removed` });
+  } catch (err) {
+    console.log(err);
   }
-  return res.status(404).json({ message: "Not found" });
 });
 
 router.put("/:contactId", async (req, res, next) => {
   const { contactId } = req.params;
   const { name, phone, email } = req.body;
-  const id = await getContactById(contactId);
+  const id = getContactById(contactId);
 
   if (!id) {
     return res.status(404).json({ message: "Not found" });
@@ -73,4 +72,18 @@ router.put("/:contactId", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+router.patch("/:contactId/favorite", async (req, res, next) => {
+  const { contactId } = req.params;
+
+  if (Object.keys(req.body).length === 0) {
+    return res.status(400).json({ message: "Missing field favorite" });
+  }
+
+  try {
+    const patchFavorite = updateStatusContact(contactId, req.body);
+    return res.status(200).json(await patchFavorite);
+  } catch (err) {
+    console.log(err);
+    return res.status(404).json({ message: "Not found" });
+  }
+});
