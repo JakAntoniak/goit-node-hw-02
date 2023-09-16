@@ -9,7 +9,7 @@ import {
 } from "../../models/contacts.js";
 import Joi from "joi";
 
-export const router = express.Router();
+export const contactsRouter = express.Router();
 
 const schema = Joi.object({
   name: Joi.string().required(),
@@ -17,18 +17,18 @@ const schema = Joi.object({
   phone: Joi.string().required(),
 });
 
-router.get("/", async (req, res, next) => {
+contactsRouter.get("/", async (req, res, next) => {
   const contacts = await listContacts();
   res.status(200).json(contacts);
 });
 
-router.get("/:contactId", async (req, res, next) => {
+contactsRouter.get("/:contactId", async (req, res, next) => {
   const { contactId } = req.params;
   const id = getContactById(contactId);
   res.status(200).json(await id);
 });
 
-router.post("/", async (req, res, next) => {
+contactsRouter.post("/", async (req, res, next) => {
   if (Object.keys(req.body).length === 0) {
     return res.status(400).json({ message: "Add keys: name, email and phone" });
   }
@@ -45,7 +45,7 @@ router.post("/", async (req, res, next) => {
   res.status(201).json(await newContact);
 });
 
-router.delete("/:contactId", async (req, res, next) => {
+contactsRouter.delete("/:contactId", async (req, res, next) => {
   const { contactId } = req.params;
 
   try {
@@ -58,7 +58,7 @@ router.delete("/:contactId", async (req, res, next) => {
   }
 });
 
-router.put("/:contactId", async (req, res, next) => {
+contactsRouter.put("/:contactId", async (req, res, next) => {
   const { contactId } = req.params;
   const { name, phone, email } = req.body;
   const id = getContactById(contactId);
@@ -72,7 +72,7 @@ router.put("/:contactId", async (req, res, next) => {
   }
 });
 
-router.patch("/:contactId/favorite", async (req, res, next) => {
+contactsRouter.patch("/:contactId/favorite", async (req, res, next) => {
   const { contactId } = req.params;
 
   if (Object.keys(req.body).length === 0) {
