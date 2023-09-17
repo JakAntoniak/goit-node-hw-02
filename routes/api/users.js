@@ -49,10 +49,10 @@ usersRouter.post("/signup", async (req, res, next) => {
   const { email, password } = req.body;
   const allUsers = await listUsers();
   const userExist = allUsers.find((user) => user.email === email);
+
   if (userExist) {
     return res.status(409).json(conflict());
   }
-  const newUser = addNewUser(req.body);
 
   const validation = schema.validate({ email, password });
 
@@ -61,6 +61,9 @@ usersRouter.post("/signup", async (req, res, next) => {
       .status(400)
       .json({ message: `Key ${validation.error.details[0].message}` });
   }
+
+  const newUser = addNewUser(req.body);
+
   res.status(201).json(created(await newUser));
 });
 

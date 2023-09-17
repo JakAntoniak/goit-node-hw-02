@@ -1,5 +1,6 @@
 import { User } from "../schema/usersSchema.js";
 import bcrypt from "bcrypt";
+import gravatar from "gravatar";
 
 export const listUsers = async () => {
   try {
@@ -22,6 +23,12 @@ export const getUser = async (id) => {
 export const addNewUser = async (body) => {
   const { email, password } = body;
 
+  const url = gravatar.url(email, {
+    s: "400",
+    r: "x",
+    d: "robohash",
+  });
+
   try {
     const salt = await bcrypt.genSalt();
 
@@ -29,6 +36,7 @@ export const addNewUser = async (body) => {
     const newUser = {
       email,
       password: hashedPassword,
+      avatarURL: url,
     };
 
     return User.create(newUser);
