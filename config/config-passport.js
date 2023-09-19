@@ -3,8 +3,11 @@ import passportJWT from "passport-jwt";
 import { User } from "../schema/usersSchema.js";
 import env from "dotenv";
 import { listUsers } from "../models/users.js";
+import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
 env.config();
+
 const secret = process.env.SECRET;
 
 const ExtractJWT = passportJWT.ExtractJwt;
@@ -21,7 +24,8 @@ passport.use(
         if (!user) {
           return done(new Error("User not found"));
         }
-        return done(null, user);
+        const { id, email, subscription, avatarUrl, token } = user;
+        return done(null, { id, email, subscription, avatarUrl, token });
       })
       .catch((err) => done(err));
   })
@@ -46,10 +50,10 @@ export const auth = async (req, res, next) => {
 
         const authHeader = req.headers.authorization;
         const token = authHeader && authHeader.split(" ")[1];
-        console.log(authHeader);
 
         const allUsers = await listUsers();
         const tokenExists = allUsers.some((user) => user.token === token);
+
         if (!tokenExists) {
           return res.status(401).json({
             status: "error",
@@ -60,6 +64,17 @@ export const auth = async (req, res, next) => {
         }
 
         req.user = user;
+        const { id: userId } = user;
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+          return res.status(400).json({
+            status: "error",
+            code: 400,
+            message: "User is not a valid user",
+            data: "User is not a valid user",
+          });
+        }
+
         next();
       }
     )(req, res, next);

@@ -12,7 +12,8 @@ export const listUsers = async () => {
 
 export const getUser = async (id) => {
   try {
-    return User.findById(id);
+    const user = User.findById(id);
+    return user;
   } catch (err) {
     console.log(err);
     throw err;

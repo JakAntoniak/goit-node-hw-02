@@ -26,17 +26,19 @@ const schema = Joi.object({
   password: Joi.string().required().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
 });
 
-usersRouter.get("/current", async (req, res, next) => {
-  const { id } = req.body;
+usersRouter.get("/current", auth, async (req, res, next) => {
+  const { id: userId } = req.user;
   try {
-    const user = await getUser(id);
-
+    const user = await getUser(userId);
     if (!user) {
       return res.status(404).json(`Error! User not found!`);
     }
-
     const { email } = user;
-    return res.status(200).json(success(email));
+    return res.status(200).json({
+      status: "success",
+      code: 200,
+      data: { email },
+    });
   } catch (err) {
     res.status(500).json(`An error occurred while getting the contact: ${err}`);
   }
@@ -48,6 +50,7 @@ usersRouter.post("/signup", async (req, res, next) => {
   }
   const { email, password } = req.body;
   const allUsers = await listUsers();
+
   const userExist = allUsers.find((user) => user.email === email);
   if (userExist) {
     return res.status(409).json(conflict());
@@ -89,7 +92,7 @@ usersRouter.post("/login", async (req, res, next) => {
 });
 
 usersRouter.post("/logout", auth, async (req, res, next) => {
-  const { id } = req.body;
+  const { id } = req.user;
   const user = await getUser(id);
 
   if (!user) {
