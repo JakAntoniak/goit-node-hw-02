@@ -8,6 +8,7 @@ import {
   updateStatusContact,
 } from "../../models/contacts.js";
 import Joi from "joi";
+import { auth } from "../../config/config-passport.js";
 
 export const contactsRouter = express.Router();
 
@@ -17,18 +18,18 @@ const schema = Joi.object({
   phone: Joi.string().required(),
 });
 
-contactsRouter.get("/", async (req, res, next) => {
+contactsRouter.get("/", auth, async (req, res, next) => {
   const contacts = await listContacts();
   res.status(200).json(contacts);
 });
 
-contactsRouter.get("/:contactId", async (req, res, next) => {
+contactsRouter.get("/:contactId", auth, async (req, res, next) => {
   const { contactId } = req.params;
   const id = getContactById(contactId);
   res.status(200).json(await id);
 });
 
-contactsRouter.post("/", async (req, res, next) => {
+contactsRouter.post("/", auth, async (req, res, next) => {
   if (Object.keys(req.body).length === 0) {
     return res.status(400).json({ message: "Add keys: name, email and phone" });
   }
@@ -45,7 +46,7 @@ contactsRouter.post("/", async (req, res, next) => {
   res.status(201).json(await newContact);
 });
 
-contactsRouter.delete("/:contactId", async (req, res, next) => {
+contactsRouter.delete("/:contactId", auth, async (req, res, next) => {
   const { contactId } = req.params;
 
   try {
@@ -58,7 +59,7 @@ contactsRouter.delete("/:contactId", async (req, res, next) => {
   }
 });
 
-contactsRouter.put("/:contactId", async (req, res, next) => {
+contactsRouter.put("/:contactId", auth, async (req, res, next) => {
   const { contactId } = req.params;
   const { name, phone, email } = req.body;
   const id = getContactById(contactId);
@@ -72,7 +73,7 @@ contactsRouter.put("/:contactId", async (req, res, next) => {
   }
 });
 
-contactsRouter.patch("/:contactId/favorite", async (req, res, next) => {
+contactsRouter.patch("/:contactId/favorite", auth, async (req, res, next) => {
   const { contactId } = req.params;
 
   if (Object.keys(req.body).length === 0) {
