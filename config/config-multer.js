@@ -4,8 +4,22 @@ const path = require("path");
 const fs = require("fs").promises;
 const app = express();
 const multer = require("multer");
+const gravatar = require("gravatar");
+
 const uploadDir = path.join(process.cwd(), "uploads");
 const storeImage = path.join(process.cwd(), "images");
+
+const addNewUser = async () => {
+  const email = "jasonderulo@gmail.com";
+  const url = gravatar.url(email, {
+    s: "400",
+    r: "x",
+    d: "robohash",
+  });
+
+  console.log(url);
+};
+addNewUser();
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -29,12 +43,14 @@ app.post("/upload", upload.single("picture"), async (req, res, next) => {
   const { path: temporaryName, originalname } = req.file;
   const fileName = path.join(storeImage, originalname);
   console.log(fileName);
+
   try {
     await fs.rename(temporaryName, fileName);
   } catch (err) {
     await fs.unlink(temporaryName);
     return next(err);
   }
+
   res.json({ description, message: "File uploaded successfully", status: 200 });
 });
 

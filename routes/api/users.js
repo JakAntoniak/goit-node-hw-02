@@ -107,3 +107,22 @@ usersRouter.post("/logout", auth, async (req, res, next) => {
 
   return res.status(204).json();
 });
+
+usersRouter.patch(
+  "/avatars",
+  upload.single("picture"),
+  async (req, res, next) => {
+    const { description } = req.body;
+    console.log(req.file);
+
+    // console.log(req.path);
+    // if (!user) {
+    //   return res.status(401).json({
+    //     status: "error",
+    //     code: 401,
+    //     message: "Unauthorized",
+    //   });
+    // }
+    return res.status(200).json({ message: "OK" });
+  }
+);

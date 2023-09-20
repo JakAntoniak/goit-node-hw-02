@@ -29,6 +29,7 @@ export const addNewUser = async (body) => {
     d: "robohash",
   });
 
+  console.log(url);
   try {
     const salt = await bcrypt.genSalt();
 
