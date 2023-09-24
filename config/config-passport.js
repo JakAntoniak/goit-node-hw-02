@@ -3,6 +3,7 @@ import passportJWT from "passport-jwt";
 import { User } from "../schema/usersSchema.js";
 import env from "dotenv";
 import { listUsers } from "../models/users.js";
+import { unauthorized } from "../schema/responseCases.js";
 
 env.config();
 const secret = process.env.SECRET;
@@ -36,12 +37,7 @@ export const auth = async (req, res, next) => {
       { session: false },
       async (err, user) => {
         if (!user || err) {
-          return res.status(401).json({
-            status: "error",
-            code: 401,
-            message: "Unauthorized",
-            data: "Unauthorized",
-          });
+          return res.status(401).json(unauthorized("Unauthorized"));
         }
 
         const authHeader = req.headers.authorization;

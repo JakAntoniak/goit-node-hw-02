@@ -5,6 +5,7 @@ import {
   loginUser,
   listUsers,
   getUser,
+  patchAvatar,
 } from "../../models/users.js";
 import jwt from "jsonwebtoken";
 import env from "dotenv";
@@ -16,6 +17,7 @@ import {
   conflict,
 } from "../../schema/responseCases.js";
 import { auth } from "../../config/config-passport.js";
+import { uploadAvatar } from "../../config/config-multer.js";
 
 env.config();
 
@@ -28,6 +30,7 @@ const schema = Joi.object({
 
 usersRouter.get("/current", async (req, res, next) => {
   const { id } = req.body;
+
   try {
     const user = await getUser(id);
 
@@ -71,6 +74,7 @@ usersRouter.post("/login", async (req, res, next) => {
   if (Object.keys(req.body).length < 2) {
     return res.status(400).json(badRequest());
   }
+
   const user = await loginUser(req.body);
 
   const secret = process.env.SECRET;
@@ -96,11 +100,7 @@ usersRouter.post("/logout", auth, async (req, res, next) => {
   const user = await getUser(id);
 
   if (!user) {
-    return res.status(401).json({
-      status: "error",
-      code: 401,
-      message: "Unauthorized",
-    });
+    return res.status(401).json(unauthorized("Unauthorized"));
   }
   user.token = null;
   await user.save();
@@ -110,19 +110,29 @@ usersRouter.post("/logout", auth, async (req, res, next) => {
 
 usersRouter.patch(
   "/avatars",
-  upload.single("picture"),
+  auth,
+  uploadAvatar.single("avatar"),
   async (req, res, next) => {
-    const { description } = req.body;
-    console.log(req.file);
+    const { id } = req.body;
+    const { path } = req.file;
 
-    // console.log(req.path);
-    // if (!user) {
-    //   return res.status(401).json({
-    //     status: "error",
-    //     code: 401,
-    //     message: "Unauthorized",
-    //   });
-    // }
-    return res.status(200).json({ message: "OK" });
+    const user = await getUser(id);
+
+    const file = req.file;
+
+    if (!file) {
+      return res.status(401).json(unauthorized("File is missing!"));
+    }
+    if (!user) {
+      return res.status(401).json(unauthorized("Unauthorized"));
+    }
+    try {
+      const newAvatarPath = await patchAvatar(path, id);
+      return res.status(200).json(success({ avatarURL: newAvatarPath }));
+    } catch (err) {
+      res
+        .status(500)
+        .json(`An error occurred while updating the avatar: ${err}`);
+    }
   }
 );

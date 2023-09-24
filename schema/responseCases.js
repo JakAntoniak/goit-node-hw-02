@@ -28,12 +28,12 @@ export const badRequest = () => {
   };
 };
 
-export const unauthorized = () => {
+export const unauthorized = (message) => {
   return {
     ResponseBody: {
       status: "Unauthorized",
       code: 401,
-      message: "Email or password is wrong",
+      message: message,
     },
   };
 };
