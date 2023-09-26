@@ -71,10 +71,6 @@ export const loginUser = async (body) => {
 export const patchAvatar = async (avatarPath, userId) => {
   try {
     const localPath = `public/avatars/${userId}-avatar.jpg`;
-    const serverPath = `http://localhost:3000/${localPath.replace(
-      /^public\//,
-      ""
-    )}`;
 
     const avatar = await Jimp.read(avatarPath);
     await avatar.resize(250, 250).quality(60).writeAsync(localPath);
@@ -82,7 +78,7 @@ export const patchAvatar = async (avatarPath, userId) => {
     await User.findByIdAndUpdate({ _id: userId }, { avatarURL: localPath });
 
     await fs.unlink(avatarPath);
-    return serverPath;
+    return localPath;
   } catch (err) {
     console.log(err);
     throw err;

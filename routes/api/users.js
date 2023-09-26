@@ -113,7 +113,7 @@ usersRouter.patch(
   auth,
   uploadAvatar.single("avatar"),
   async (req, res, next) => {
-    const { id } = req.body;
+    const { id } = req.user;
     const { path } = req.file;
 
     const user = await getUser(id);
