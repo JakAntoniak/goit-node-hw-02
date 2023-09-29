@@ -42,7 +42,6 @@ export const auth = async (req, res, next) => {
 
         const authHeader = req.headers.authorization;
         const token = authHeader && authHeader.split(" ")[1];
-        console.log(authHeader);
 
         const allUsers = await listUsers();
         const tokenExists = allUsers.some((user) => user.token === token);

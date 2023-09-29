@@ -18,12 +18,12 @@ export const created = (user) => {
   };
 };
 
-export const badRequest = () => {
+export const badRequest = (message) => {
   return {
     ResponseBody: {
       status: "Bad Request",
       code: 400,
-      message: "Email and password cannot be empty",
+      message,
     },
   };
 };
@@ -33,7 +33,7 @@ export const unauthorized = (message) => {
     ResponseBody: {
       status: "Unauthorized",
       code: 401,
-      message: message,
+      message,
     },
   };
 };

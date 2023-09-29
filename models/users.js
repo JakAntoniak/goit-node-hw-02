@@ -3,7 +3,8 @@ import bcrypt from "bcrypt";
 import gravatar from "gravatar";
 import Jimp from "jimp";
 import fs from "fs/promises";
-import path from "path";
+import crypto from "crypto";
+import { sendVerificationEmail } from "../config/config-nodemailer.js";
 
 export const listUsers = async () => {
   try {
@@ -14,9 +15,40 @@ export const listUsers = async () => {
   }
 };
 
+export const getVerificationToken = async (verificationToken) => {
+  try {
+    const user = await User.findOne({ verificationToken });
+
+    if (!user) {
+      console.log("Error: User not found");
+    }
+
+    const { verify } = user;
+    if (verify) {
+      throw new Error("User has been verified");
+    }
+    user.verify = true;
+    user.verificationToken = null;
+
+    await user.save();
+  } catch (err) {
+    console.log("Error getting user: ", err);
+    throw err;
+  }
+};
+
 export const getUser = async (id) => {
   try {
     return User.findById(id);
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+export const getUserByEmail = async (email) => {
+  try {
+    return User.findOne({ email });
   } catch (err) {
     console.log(err);
     throw err;
@@ -32,6 +64,8 @@ export const addNewUser = async (body) => {
     d: "robohash",
   });
 
+  const verificationToken = crypto.randomBytes(16).toString("hex");
+
   try {
     const salt = await bcrypt.genSalt();
 
@@ -40,7 +74,12 @@ export const addNewUser = async (body) => {
       email,
       password: hashedPassword,
       avatarURL: url,
+      verificationToken: verificationToken,
     };
+
+    const link = `http://localhost:3000/api/users/verify/${newUser.verificationToken}`;
+
+    await sendVerificationEmail(newUser.email, "Email Verification\n", link);
 
     return User.create(newUser);
   } catch (err) {
