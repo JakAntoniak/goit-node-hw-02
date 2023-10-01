@@ -1,6 +1,6 @@
 import express from "express";
 import Joi from "joi";
-import crypto from "crypto";
+
 import {
   addNewUser,
   loginUser,
@@ -32,8 +32,8 @@ const schema = Joi.object({
   password: Joi.string().required().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
 });
 
-usersRouter.get("/current", async (req, res, next) => {
-  const { id } = req.body;
+usersRouter.get("/current", auth, async (req, res, next) => {
+  const { id } = req.user;
 
   try {
     const user = await getUser(id);
@@ -42,8 +42,7 @@ usersRouter.get("/current", async (req, res, next) => {
       return res.status(404).json(`Error! User not found!`);
     }
 
-    const { email } = user;
-    return res.status(200).json(success(email));
+    return res.status(200).json(success(user));
   } catch (err) {
     res.status(500).json(`An error occurred while getting the contact: ${err}`);
   }
@@ -122,6 +121,10 @@ usersRouter.post("/login", async (req, res, next) => {
   }
 
   const user = await loginUser(req.body);
+
+  if (!user.verify) {
+    return res.status(401).json(unauthorized("Verify your email first"));
+  }
 
   const secret = process.env.SECRET;
 
